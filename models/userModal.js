@@ -11,7 +11,21 @@ const instaUserSchema = mongoose.Schema(
       type: String,
       required: [true, "please add the user password"],
     },
-    userAction: []
+    userAction: [
+      {
+        storyId: {
+          type: mongoose.Schema.Types.ObjectId, 
+          required: true,
+        },
+        bookmark: {
+          type: Boolean,
+          default: false,
+        },
+        like: {
+          type: String,
+        }
+      }
+    ]
   },
   {
     timestamps: true,
