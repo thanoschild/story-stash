@@ -4,7 +4,6 @@ const connectDb = require("./config/dbConnection");
 const dotenv = require("dotenv").config();
 const bodyParser = require("body-parser");
 
-connectDb();
 const app = express();
 const port = process.env.PORT || 5001;
 
@@ -17,6 +16,8 @@ app.use("/api/story", require("./routes/storyRoutes"));
 
 app.use(errorHandler);
 
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+connectDb().then(() => {
+    app.listen(port, () => {
+        console.log(`Server is running on port ${port}`);
+    });
 });
