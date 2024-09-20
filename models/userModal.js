@@ -17,13 +17,8 @@ const instaUserSchema = mongoose.Schema(
           type: mongoose.Schema.Types.ObjectId, 
           required: true,
         },
-        bookmark: {
-          type: Boolean,
-          default: false,
-        },
-        like: {
-          type: String,
-        }
+        bookmark: [],
+        like: []
       }
     ]
   },

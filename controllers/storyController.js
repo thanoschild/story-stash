@@ -31,85 +31,54 @@ const addStory = expressAsyncHandler(async (req, res) => {
   });
 
 
-  const toggleBookmark = expressAsyncHandler(async (req, res) => {
-    const { storyId } = req.body;
+  const userAction = expressAsyncHandler(async (req, res) => {
+    const { storyId, newBookmark, newLike } = req.body;
     const userId = req.userId;
 
     if (!storyId) {
       res.status(400);
       throw new Error("storyId is required");
     }
+
+    // if(newBookmark.length === 0 && newLike.length === 0) {
+    //   res.status(400);
+    //   throw new Error("both bookmark or like cannot be empty");
+    // }
   
     const user = await User.findById(userId);
-  
-    // Find if the story is already bookmarked in userAction array
     const userActionIndex = user.userAction.findIndex(
       (action) => action.storyId.toString() === storyId
     );
 
-  
+    console.log("index: ", userActionIndex);
     if (userActionIndex > -1) {
       const currentAction = user.userAction[userActionIndex];
-      
-      if (currentAction.bookmark) {
-        if (currentAction.like) {
-          user.userAction[userActionIndex].bookmark = false;
-        } else {
-          user.userAction.splice(userActionIndex, 1);
-        }
-      }else {
-         user.userAction[userActionIndex].bookmark = true;
-      }
-    } else {
-      const newAction = {
-        storyId: storyId,
-        bookmark: true,
-        like: user.userAction[userActionIndex]?.like || ""
-      };
-      user.userAction.push(newAction);
-    }
-  
-    const updatedUser = await user.save();
-  
-    res.status(200).json({
-      success: true,
-      error: false,
-      data: updatedUser.userAction
-    });
-  });
-
-
-  const updateLike = expressAsyncHandler(async (req, res) => {
-    const { storyId, newLike } = req.body;
-    const userId = req.userId;
-    console.log("userId: ", userId);
-
-    if (!storyId || !newLike) {
-      res.status(400);
-      throw new Error(" storyId and newLike are required");
-    }
-  
-    const user = await User.findById(userId);
-
-  
-    // Find the userAction for the storyId
-    const userActionIndex = user.userAction.findIndex(
-      (action) => action.storyId.toString() === storyId
-    );
-  
-    if (userActionIndex > -1) {
-      const currentAction = user.userAction[userActionIndex];
+      currentAction.bookmark = newBookmark;
       currentAction.like = newLike;
-  
-      if (currentAction.like === "" && !currentAction.bookmark) {
+
+      if(newBookmark.length === 0 && newLike.length === 0) {
         user.userAction.splice(userActionIndex, 1);
       }
+      
+      // if (currentAction.bookmark) {
+      //   if (currentAction.like) {
+      //     user.userAction[userActionIndex].bookmark = false;
+      //   } else {
+      //     user.userAction.splice(userActionIndex, 1);
+      //   }
+      // }else {
+      //    user.userAction[userActionIndex].bookmark = true;
+      // }
     } else {
-      user.userAction.push({
-        storyId: storyId,
-        bookmark: false,  
-        like: newLike,
-      });
+      if(newBookmark.length !== 0 || newLike.length !== 0) {
+        console.log("inside else")
+        const newAction = {
+          storyId: storyId,
+          bookmark: newBookmark,
+          like: newLike
+        };
+        user.userAction.push(newAction);
+      }
     }
   
     const updatedUser = await user.save();
@@ -121,4 +90,15 @@ const addStory = expressAsyncHandler(async (req, res) => {
     });
   });
 
-  module.exports = { addStory, toggleBookmark, updateLike };  
+
+ 
+  module.exports = { addStory, userAction };  
+
+
+
+  // add story
+  // get story 
+  // update story 
+  // bookmark click
+  // like per click
+  // ?story=123456&slide=1
