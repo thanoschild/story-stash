@@ -5,10 +5,10 @@ const User = require("../models/userModal");
 const addStory = expressAsyncHandler(async (req, res) => {
   const sessionUserId = req.userId;
   const { slides } = req?.body;
-  
-  if(!slides || slides.length === 0) {
-    res.status(400)
-    throw new Error("slides parameter is required and connot be empty")
+
+  if (!slides || slides.length === 0) {
+    res.status(400);
+    throw new Error("slides parameter is required and connot be empty");
   }
   const payload = {
     userId: sessionUserId,
@@ -31,13 +31,12 @@ const addStory = expressAsyncHandler(async (req, res) => {
   });
 });
 
-
 const getStory = expressAsyncHandler(async (req, res) => {
   const { storyId } = req.body;
 
-  if(!storyId) {
-    res.status(404)
-    throw new Error("StoryId not found")
+  if (!storyId) {
+    res.status(404);
+    throw new Error("StoryId not found");
   }
 
   const story = await Story.findById(storyId);
@@ -50,11 +49,10 @@ const getStory = expressAsyncHandler(async (req, res) => {
   });
 });
 
-
 const getStoriesByUserId = expressAsyncHandler(async (req, res) => {
   const userId = req.userId;
   const stories = await Story.find({ userId });
-  
+
   res.status(200).json({
     message: "story fetched successfully",
     success: true,
@@ -63,15 +61,35 @@ const getStoriesByUserId = expressAsyncHandler(async (req, res) => {
   });
 });
 
+const getStoriesByCategory = expressAsyncHandler(async (req, res) => {
+  const { category } = req.body;
+  let stories = {};
+  if (category === "all") {
+    stories = await Story.find({});
+  } else {
+    stories = await Story.find({
+      slides: {
+        $elemMatch: { category },
+      },
+    });
+  }
+
+  res.status(200).json({
+    message: "story fetched successfully",
+    success: true,
+    error: false,
+    data: stories,
+  });
+});
 
 const updateStory = expressAsyncHandler(async (req, res) => {
   const { storyId, slides } = req.body;
 
-  if(!storyId) {
-    res.status(404)
-    throw new Error("StoryId not found")
+  if (!storyId) {
+    res.status(404);
+    throw new Error("StoryId not found");
   }
-  
+
   const story = await Story.findById(storyId);
   story.slides = slides;
   const saveStory = await story.save();
@@ -83,7 +101,6 @@ const updateStory = expressAsyncHandler(async (req, res) => {
     data: saveStory,
   });
 });
-
 
 const userAction = expressAsyncHandler(async (req, res) => {
   const { storyId, newBookmark, newLike } = req.body;
@@ -127,37 +144,35 @@ const userAction = expressAsyncHandler(async (req, res) => {
   });
 });
 
-
 const updateLikeCounts = expressAsyncHandler(async (req, res) => {
-  const {storyId, slideId, like} = req.body;
+  const { storyId, slideId, like } = req.body;
   const story = await Story.findById(storyId);
-  if(!story) {
-    res.status(400)
+  if (!story) {
+    res.status(400);
     throw new Error("story doesn't exist");
   }
-  if(slideId >= story.slides.length) {
+  if (slideId >= story.slides.length) {
     res.status(404);
     throw new Error("Slide not found");
   }
-  
+
   story.slides[slideId].likes += like;
-  story.markModified('slides');
+  story.markModified("slides");
   const updatedStory = await story.save();
 
   res.status(200).json({
     message: "like updated successfully",
     success: true,
     error: false,
-    data: updatedStory
+    data: updatedStory,
   });
 });
-
 
 const getBookmarkAndLike = expressAsyncHandler(async (req, res) => {
   const userId = req.userId;
   const user = await User.findById(userId);
 
-  if(!user) {
+  if (!user) {
     res.status(400);
     throw new Error("user doesn't exist");
   }
@@ -166,18 +181,19 @@ const getBookmarkAndLike = expressAsyncHandler(async (req, res) => {
     message: "bookmark and like fetched successfully",
     success: true,
     error: false,
-    data: user.userAction
-  })
+    data: user.userAction,
+  });
 });
 
-module.exports = { 
-  addStory, 
-  getStory, 
+module.exports = {
+  addStory,
+  getStory,
   getStoriesByUserId,
-  updateStory, 
-  userAction, 
-  getBookmarkAndLike, 
-  updateLikeCounts 
+  getStoriesByCategory,
+  updateStory,
+  userAction,
+  getBookmarkAndLike,
+  updateLikeCounts,
 };
 
 // add story -- done
